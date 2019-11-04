@@ -1,5 +1,6 @@
 package com.ihorpolataiko.dropwizarddemo;
 
+import com.ihorpolataiko.dropwizarddemo.configuration.db.MongoProperties;
 import com.ihorpolataiko.dropwizarddemo.dao.ItemDao;
 import com.ihorpolataiko.dropwizarddemo.resource.GreetingResource;
 import com.ihorpolataiko.dropwizarddemo.resource.ItemResource;
@@ -41,6 +42,7 @@ public class App extends Application<AppConfiguration> {
             @Override
             protected void configure() {
                 bind(ItemDao.class).to(ItemDao.class).in(Singleton.class);
+                bind(appConfiguration.getMongoProperties()).to(MongoProperties.class).named("mongo-properties");
             }
         });
     }

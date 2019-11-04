@@ -9,3 +9,8 @@ server:
 swagger:
   resourcePackage: com.ihorpolataiko.dropwizarddemo.resource
   scan: true
+
+mongoProperties:
+  dbName: "items"
+  host: "localhost"
+  port: 27017

@@ -1,7 +1,8 @@
 package com.ihorpolataiko.dropwizarddemo.resource;
 
 import com.ihorpolataiko.dropwizarddemo.dao.ItemDao;
-import com.ihorpolataiko.dropwizarddemo.domain.Item;
+import com.ihorpolataiko.dropwizarddemo.transfer.ItemDto;
+import io.dropwizard.jersey.PATCH;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.bson.types.ObjectId;
@@ -18,6 +19,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.ihorpolataiko.dropwizarddemo.transfer.ItemDto.fromDto;
+import static com.ihorpolataiko.dropwizarddemo.transfer.ItemDto.toDto;
 
 @Api("Item resource")
 @Path("/items")
@@ -33,34 +40,49 @@ public class ItemResource {
 
     @GET
     public Response findAll() {
-        return Response.ok(itemDao.findAll()).build();
+        List<ItemDto> transferList = itemDao.findAll().stream()
+                .map(ItemDto::toDto)
+                .collect(Collectors.toList());
+        return Response.ok(transferList).build();
     }
 
     @Path("/{id}")
     @GET
-    public Response findById(@ApiParam(value = "id") @PathParam("id") @NotNull ObjectId id) {
-        return Response.ok(itemDao.findById(id)).build();
+    public Response findById(@ApiParam(value = "id") @PathParam("id") @NotNull String id) {
+        return Response.ok(toDto(itemDao.findById(new ObjectId(id)))).build();
     }
 
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@ApiParam(value = "id") @PathParam("id") @NotNull ObjectId id,
-                           @ApiParam("item") @NotNull Item item) {
+    public Response update(@ApiParam(value = "id") @PathParam("id") @NotNull String id,
+                           @ApiParam("item") @NotNull ItemDto item) {
         item.setId(id);
-        return Response.ok(itemDao.update(item)).build();
-    }
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(@ApiParam("item") @NotNull Item item) {
-        return Response.ok(itemDao.create(item)).status(Response.Status.CREATED).build();
+        itemDao.update(fromDto(item));
+        return Response.ok().build();
     }
 
     @Path("/{id}")
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateFields(@ApiParam(value = "id") @PathParam("id") @NotNull String id,
+                                 @ApiParam("item") @NotNull Map<String, Object> fieldsToUpdate) {
+        itemDao.updateField(new ObjectId(id), fieldsToUpdate);
+        return Response.ok().build();
+    }
+
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response create(@ApiParam("item") @NotNull ItemDto item) {
+        return Response.ok(itemDao.create(fromDto(item))).status(Response.Status.CREATED).build();
+    }
+
+
+    @Path("/{id}")
     @DELETE
-    public Response deleteById(@ApiParam(value = "id") @PathParam("id") @NotNull ObjectId id) {
-        itemDao.deleteById(id);
+    public Response deleteById(@ApiParam(value = "id") @PathParam("id") @NotNull String id) {
+        itemDao.deleteById(new ObjectId(id));
         return Response.noContent().build();
     }
 }
