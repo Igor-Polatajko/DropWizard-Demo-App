@@ -5,3 +5,7 @@ server:
   adminConnectors:
     - type: http
       port: 9001
+
+swagger:
+  resourcePackage: com.ihorpolataiko.dropwizarddemo.resource
+  scan: true
