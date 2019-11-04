@@ -1,11 +1,16 @@
 package com.ihorpolataiko.dropwizarddemo;
 
+import com.ihorpolataiko.dropwizarddemo.dao.ItemDao;
 import com.ihorpolataiko.dropwizarddemo.resource.GreetingResource;
+import com.ihorpolataiko.dropwizarddemo.resource.ItemResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import javax.inject.Singleton;
 
 public class App extends Application<AppConfiguration> {
 
@@ -30,6 +35,13 @@ public class App extends Application<AppConfiguration> {
     }
 
     public void run(AppConfiguration appConfiguration, Environment environment) throws Exception {
-        environment.jersey().register(new GreetingResource());
+        environment.jersey().register(GreetingResource.class);
+        environment.jersey().register(ItemResource.class);
+        environment.jersey().register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(ItemDao.class).to(ItemDao.class).in(Singleton.class);
+            }
+        });
     }
 }
