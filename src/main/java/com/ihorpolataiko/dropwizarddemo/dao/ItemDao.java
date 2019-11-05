@@ -6,12 +6,10 @@ import com.mongodb.MongoClient;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +19,7 @@ public class ItemDao {
     private final Datastore datastore;
 
     @Inject
-    public ItemDao(@Named("mongo-properties") MongoProperties mongoProperties) throws UnknownHostException {
+    public ItemDao(@Named("mongo-properties") MongoProperties mongoProperties) {
         MongoClient mongoClient = new MongoClient(mongoProperties.getHost(), mongoProperties.getPort());
         Morphia morphia = new Morphia();
         this.datastore = morphia.createDatastore(mongoClient, mongoProperties.getDbName());
@@ -32,7 +30,9 @@ public class ItemDao {
     }
 
     public Item findById(ObjectId id) {
-        return findByIdQuery(id).get();
+        return datastore.createQuery(Item.class)
+                .filter("id", id)
+                .get();
     }
 
     public void update(Item item) {
@@ -60,10 +60,5 @@ public class ItemDao {
     public void deleteById(ObjectId objectId) {
         Item itemToDelete = findById(objectId);
         datastore.delete(itemToDelete);
-    }
-
-    private Query<Item> findByIdQuery(ObjectId id) {
-        return datastore.createQuery(Item.class)
-                .filter("id", id);
     }
 }
