@@ -1,19 +1,15 @@
 package com.ihorpolataiko.dropwizarddemo.dao;
 
+import com.ihorpolataiko.dropwizarddemo.BaseIntegrationTest;
 import com.ihorpolataiko.dropwizarddemo.domain.Item;
 import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -23,32 +19,29 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
 
-public class ItemDaoTest extends BaseDaoTest {
-    private Map<String, Item> testData;
+public class ItemDaoTest extends BaseIntegrationTest {
     private ItemDao itemDao;
 
     @Before
     public void setup() {
-        super.setup();
-        List<Item> testDataList = prepareTestData();
-        testData = persistTestData(testDataList);
+        super.baseSetup();
         itemDao = new ItemDao(mongoProperties);
     }
 
     @After
     public void after() {
-        super.after();
+        super.baseAfter();
     }
 
     @Test
     public void findAll() {
         List<Item> dataFromDb = itemDao.findAll();
-        assertThat(dataFromDb).isEqualTo(new ArrayList<>(testData.values()));
+        assertThat(dataFromDb).isEqualTo(getTestDataValues());
     }
 
     @Test
     public void findById() {
-        String id = testData.keySet().iterator().next();
+        String id = getFirstKey(testData);
         Item itemFromDb = itemDao.findById(new ObjectId(id));
         assertEquals(testData.get(id), itemFromDb);
     }
@@ -67,7 +60,7 @@ public class ItemDaoTest extends BaseDaoTest {
 
     @Test
     public void update() {
-        String id = testData.keySet().iterator().next();
+        String id = getFirstKey(testData);
         Item itemToUpdate = itemDao.findById(new ObjectId(id));
         assertNotNull(itemToUpdate);
         itemToUpdate.setHeader("New Header");
@@ -83,7 +76,7 @@ public class ItemDaoTest extends BaseDaoTest {
 
     @Test
     public void updateField() {
-        String id = testData.keySet().iterator().next();
+        String id = getFirstKey(testData);
         Item itemToUpdate = itemDao.findById(new ObjectId(id));
         assertNotNull(itemToUpdate);
 
@@ -101,7 +94,7 @@ public class ItemDaoTest extends BaseDaoTest {
 
     @Test
     public void deleteById() {
-        String id = testData.keySet().iterator().next();
+        String id = getFirstKey(testData);
         Item itemToDelete = itemDao.findById(new ObjectId(id));
         assertNotNull(itemToDelete);
 
@@ -109,22 +102,5 @@ public class ItemDaoTest extends BaseDaoTest {
 
         Item deletedItem = itemDao.findById(new ObjectId(id));
         assertNull(deletedItem);
-    }
-
-    private List<Item> prepareTestData() {
-        return IntStream.range(0, 10)
-                .mapToObj(i -> Item.builder()
-                        .header("header" + i)
-                        .data("data" + i)
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    private Map<String, Item> persistTestData(List<Item> testData) {
-        return testData.stream()
-                .collect(Collectors.toMap(
-                        item -> datastore.save(item).getId().toString(),
-                        Function.identity(),
-                        (x, y) -> y, LinkedHashMap::new));
     }
 }
