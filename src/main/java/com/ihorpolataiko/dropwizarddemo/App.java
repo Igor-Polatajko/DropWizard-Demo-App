@@ -2,6 +2,8 @@ package com.ihorpolataiko.dropwizarddemo;
 
 import com.ihorpolataiko.dropwizarddemo.configuration.db.MongoProperties;
 import com.ihorpolataiko.dropwizarddemo.dao.ItemDao;
+import com.ihorpolataiko.dropwizarddemo.exception.BadRequestExceptionMapper;
+import com.ihorpolataiko.dropwizarddemo.exception.ServerInternalErrorExceptionMapper;
 import com.ihorpolataiko.dropwizarddemo.resource.GreetingResource;
 import com.ihorpolataiko.dropwizarddemo.resource.ItemResource;
 import io.dropwizard.Application;
@@ -38,6 +40,8 @@ public class App extends Application<AppConfiguration> {
     public void run(AppConfiguration appConfiguration, Environment environment) throws Exception {
         environment.jersey().register(GreetingResource.class);
         environment.jersey().register(ItemResource.class);
+        environment.jersey().register(BadRequestExceptionMapper.class);
+        environment.jersey().register(ServerInternalErrorExceptionMapper.class);
         environment.jersey().register(new AbstractBinder() {
             @Override
             protected void configure() {
